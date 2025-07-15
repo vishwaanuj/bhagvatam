@@ -1,32 +1,44 @@
 <script lang="ts">
-  import AnimatedInput from './AnimatedInput.svelte'
-  import { currentPage, posts } from '$lib/stores/app'
-  import type { GenerateImageResponse } from '$lib/stores/app'
+  import SituationInput from './SituationInput.svelte'
+  import ShlokaSelection from './ShlokaSelection.svelte'
+  import ImageGeneration from './ImageGeneration.svelte'
+  import { currentStep, generatedShlokas, posts } from '$lib/stores/app'
+  import type { Shloka } from '$lib/stores/app'
+  import { fade } from 'svelte/transition'
   
-  function handleImageGenerated(event: CustomEvent<GenerateImageResponse>) {
-    const result = event.detail
+  function handleShlokasGenerated(event: CustomEvent<Shloka[]>) {
+    generatedShlokas.set(event.detail)
+  }
+  
+  function handleShlokaSelected(event: CustomEvent<Shloka>) {
+    // Shloka is already set in the component, just handle any additional logic here
+    console.log('Shloka selected:', event.detail)
+  }
+  
+  function handleImageGenerated(event: CustomEvent<any>) {
+    const { image, prompt, shloka } = event.detail
     
-    if (result.success && result.image_b64) {
-      // Add to posts store
-      const newPost = {
-        id: result.post_id || crypto.randomUUID(),
-        prompt: 'Generated image', // You might want to pass the prompt through
-        image_b64: result.image_b64,
-        status: 'completed' as const,
-        created_at: new Date().toISOString()
-      }
-      
-      posts.update(currentPosts => [newPost, ...currentPosts])
-      
-      // Show success notification
-      showNotification('✨ Divine art manifested successfully!', 'success')
-    } else {
-      showNotification('❌ Failed to generate image: ' + (result.error || 'Unknown error'), 'error')
+    // Add to posts store
+    const newPost = {
+      id: crypto.randomUUID(),
+      prompt,
+      shloka,
+      image_b64: image,
+      status: 'completed' as const,
+      created_at: new Date().toISOString()
     }
+    
+    posts.update(currentPosts => [newPost, ...currentPosts])
+    
+    // Show success notification
+    showNotification('✨ Divine art manifested successfully!', 'success')
+  }
+  
+  function handleError(event: CustomEvent<string>) {
+    showNotification(`❌ ${event.detail}`, 'error')
   }
   
   function showNotification(message: string, type: 'success' | 'error') {
-    // Simple notification - you can replace with a proper notification library
     const notification = document.createElement('div')
     notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 animate-fade-in ${
       type === 'success' ? 'bg-green-500' : 'bg-red-500'
@@ -40,40 +52,111 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-8">
-  <div class="max-w-6xl mx-auto">
+<div class="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+  <div class="max-w-7xl mx-auto p-8">
     <!-- Header -->
     <div class="text-center mb-12">
-      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 bg-clip-text text-transparent mb-4">
-        Sacred Art Generator
+      <h1 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 bg-clip-text text-transparent mb-6">
+        🕉️ Bhagavad Gita Wisdom
       </h1>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-        Transform your spiritual visions into divine artwork using the power of AI and ancient wisdom
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Discover timeless wisdom from the Bhagavad Gita for your life's challenges, then transform that guidance into divine artwork
       </p>
+      
+      <!-- Step Indicator -->
+      <div class="mt-8 flex justify-center">
+        <div class="flex items-center space-x-4">
+          <!-- Step 1 -->
+          <div class="flex items-center space-x-2">
+            <div 
+              class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
+              class:bg-orange-500={$currentStep === 'situation'}
+              class:text-white={$currentStep === 'situation'}
+              class:bg-orange-200={$currentStep !== 'situation'}
+              class:text-orange-700={$currentStep !== 'situation'}
+            >
+              1
+            </div>
+            <span class="text-sm font-medium text-gray-600">Share Situation</span>
+          </div>
+          
+          <div class="w-8 h-0.5 bg-gray-300"></div>
+          
+          <!-- Step 2 -->
+          <div class="flex items-center space-x-2">
+            <div 
+              class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
+              class:bg-orange-500={$currentStep === 'shloka-selection'}
+              class:text-white={$currentStep === 'shloka-selection'}
+              class:bg-orange-200={$currentStep !== 'shloka-selection'}
+              class:text-orange-700={$currentStep !== 'shloka-selection'}
+            >
+              2
+            </div>
+            <span class="text-sm font-medium text-gray-600">Choose Shloka</span>
+          </div>
+          
+          <div class="w-8 h-0.5 bg-gray-300"></div>
+          
+          <!-- Step 3 -->
+          <div class="flex items-center space-x-2">
+            <div 
+              class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
+              class:bg-orange-500={$currentStep === 'image-generation'}
+              class:text-white={$currentStep === 'image-generation'}
+              class:bg-orange-200={$currentStep !== 'image-generation'}
+              class:text-orange-700={$currentStep !== 'image-generation'}
+            >
+              3
+            </div>
+            <span class="text-sm font-medium text-gray-600">Create Art</span>
+          </div>
+        </div>
+      </div>
     </div>
     
-    <!-- Main Input -->
-    <div class="mb-12">
-      <AnimatedInput on:generated={handleImageGenerated} />
+    <!-- Main Content Area -->
+    <div class="mb-16">
+      {#if $currentStep === 'situation'}
+        <div in:fade={{ duration: 300 }}>
+          <SituationInput 
+            on:shlokas-generated={handleShlokasGenerated}
+            on:error={handleError}
+          />
+        </div>
+      {:else if $currentStep === 'shloka-selection'}
+        <div in:fade={{ duration: 300 }}>
+          <ShlokaSelection 
+            on:shloka-selected={handleShlokaSelected}
+          />
+        </div>
+      {:else if $currentStep === 'image-generation'}
+        <div in:fade={{ duration: 300 }}>
+          <ImageGeneration 
+            on:image-generated={handleImageGenerated}
+            on:error={handleError}
+          />
+        </div>
+      {/if}
     </div>
     
-    <!-- Recent Generations Preview -->
-    {#if $posts.length > 0}
-      <div class="mt-16">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+    <!-- Recent Generations Preview (only show on home step) -->
+    {#if $currentStep === 'situation' && $posts.length > 0}
+      <div class="mt-16" in:fade={{ duration: 400 }}>
+        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center">
           <span class="mr-3">🎨</span>
-          Recent Manifestations
+          Recent Divine Manifestations
         </h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {#each $posts.slice(0, 6) as post (post.id)}
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {#each $posts.slice(0, 8) as post (post.id)}
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group">
               {#if post.image_b64}
-                <div class="aspect-square bg-gradient-to-br from-orange-100 to-amber-100">
+                <div class="aspect-square bg-gradient-to-br from-orange-100 to-amber-100 overflow-hidden">
                   <img 
                     src="data:image/jpeg;base64,{post.image_b64}" 
                     alt="Generated divine art"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               {:else}
@@ -86,8 +169,11 @@
               {/if}
               
               <div class="p-4">
-                <p class="text-gray-700 text-sm line-clamp-2">{post.prompt}</p>
-                <p class="text-gray-500 text-xs mt-2">
+                {#if post.shloka}
+                  <p class="text-gray-700 text-sm line-clamp-2 mb-2">{post.shloka.shloka}</p>
+                  <p class="text-gray-500 text-xs line-clamp-2 mb-2">{post.shloka.translation}</p>
+                {/if}
+                <p class="text-gray-400 text-xs">
                   {new Date(post.created_at).toLocaleDateString()}
                 </p>
               </div>
@@ -97,8 +183,7 @@
         
         <div class="text-center mt-8">
           <button 
-            on:click={() => currentPage.set('vault')}
-            class="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300"
+            class="px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium rounded-2xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             View All in Vault →
           </button>

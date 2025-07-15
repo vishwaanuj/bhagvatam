@@ -1,5 +1,6 @@
 <script lang="ts">
   import { currentPage } from '$lib/stores/app'
+  import { Home, Archive, Menu, Sparkles } from 'lucide-svelte'
   import { fly } from 'svelte/transition'
   
   let isOpen = true
@@ -29,8 +30,8 @@
               <span class="text-xl">🕉️</span>
             </div>
             <div>
-              <h1 class="text-lg font-bold">Bhagvatam</h1>
-              <p class="text-xs text-orange-200">Divine Art Generator</p>
+              <h1 class="text-lg font-bold">Bhagavad Gita</h1>
+              <p class="text-xs text-orange-200">Wisdom & Art</p>
             </div>
           </div>
         {:else}
@@ -43,9 +44,7 @@
           on:click={toggleSidebar}
           class="p-2 rounded-lg hover:bg-orange-700 transition-colors"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Menu size={20} />
         </button>
       </div>
     </div>
@@ -58,12 +57,10 @@
         class:bg-orange-700={$currentPage === 'home'}
       >
         <div class="w-8 h-8 flex items-center justify-center">
-          <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+          <Home size={20} class="group-hover:scale-110 transition-transform" />
         </div>
         {#if isOpen}
-          <span class="font-medium" transition:fly={{ x: -20, duration: 200 }}>Home</span>
+          <span class="font-medium" transition:fly={{ x: -20, duration: 200 }}>Wisdom Journey</span>
         {/if}
       </button>
       
@@ -73,12 +70,10 @@
         class:bg-orange-700={$currentPage === 'vault'}
       >
         <div class="w-8 h-8 flex items-center justify-center">
-          <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
+          <Archive size={20} class="group-hover:scale-110 transition-transform" />
         </div>
         {#if isOpen}
-          <span class="font-medium" transition:fly={{ x: -20, duration: 200 }}>Vault</span>
+          <span class="font-medium" transition:fly={{ x: -20, duration: 200 }}>Sacred Vault</span>
         {/if}
       </button>
     </nav>
@@ -86,9 +81,14 @@
     <!-- Bottom Section -->
     <div class="absolute bottom-4 left-4 right-4">
       {#if isOpen}
-        <div class="bg-orange-800/50 rounded-xl p-3" transition:fly={{ y: 20, duration: 200 }}>
-          <p class="text-xs text-orange-200 mb-2">✨ Divine Inspiration</p>
-          <p class="text-xs text-orange-100">"Manifest your spiritual visions through sacred art"</p>
+        <div class="bg-orange-800/50 rounded-xl p-4" transition:fly={{ y: 20, duration: 200 }}>
+          <div class="flex items-center space-x-2 mb-2">
+            <Sparkles size={16} class="text-orange-200" />
+            <p class="text-xs text-orange-200 font-medium">Divine Inspiration</p>
+          </div>
+          <p class="text-xs text-orange-100 leading-relaxed">
+            "Transform ancient wisdom into visual art that speaks to your soul"
+          </p>
         </div>
       {/if}
     </div>
